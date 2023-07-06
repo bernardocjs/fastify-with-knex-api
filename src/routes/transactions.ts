@@ -15,10 +15,22 @@ export async function transactionRoutes(server: FastifyInstance) {
       request.body
     );
 
+    let sessionId = request.cookies.sessionId;
+
+    if (!sessionId) {
+      sessionId = randomUUID();
+      reply.setCookie("sessionId", sessionId, {
+        path: "/",
+        maxAge: 1000 * 60 * 60 * 24, // 1 dia
+        httpOnly: true,
+      });
+    }
+
     await setupKnex("transactions").insert({
       id: randomUUID(),
       title,
       amount: type === "credit" ? amount : amount * -1,
+      session_id: sessionId,
     });
 
     return reply.status(201).send();
