@@ -1,11 +1,19 @@
 import fastify from "fastify";
 import { setupKnex } from "./database";
+import crypto from "node:crypto";
 
 const server = fastify();
 
 server.get("/hello", async () => {
-  const tables = setupKnex("sqlite_schema").select("*");
-  return tables;
+  const transaction = await setupKnex("transactions")
+    .insert({
+      id: crypto.randomUUID(),
+      title: "Primeira transacao",
+      amount: 1000,
+    })
+    .returning("*");
+
+  return transaction;
 });
 
 server
