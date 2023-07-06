@@ -2,8 +2,8 @@ import { FastifyInstance } from "fastify";
 import { setupKnex } from "../database";
 import { randomUUID } from "node:crypto";
 import { checkSessionIdExists } from "../middlewares/check-session-id-exists";
-import { createTransactionBodySchema } from "../schemas/create-transaction.schema";
-import { getTransactionsParamsSchema } from "../schemas/get-transaction-params.schema";
+import { createTransactionBodySchema } from "../utils/schemas/create-transaction.schema";
+import { getTransactionsParamsSchema } from "../utils/schemas/get-transaction-params.schema";
 
 export async function transactionRoutes(server: FastifyInstance) {
   server.post("/", async (request, reply) => {
