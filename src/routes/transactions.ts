@@ -1,16 +1,12 @@
 import { FastifyInstance } from "fastify";
-import { z } from "zod";
 import { setupKnex } from "../database";
 import { randomUUID } from "node:crypto";
+import { checkSessionIdExists } from "../middlewares/check-session-id-exists";
+import { createTransactionBodySchema } from "../schemas/create-transaction.schema";
+import { getTransactionsParamsSchema } from "../schemas/get-transaction-params.schema";
 
 export async function transactionRoutes(server: FastifyInstance) {
   server.post("/", async (request, reply) => {
-    const createTransactionBodySchema = z.object({
-      title: z.string(),
-      amount: z.number(),
-      type: z.enum(["credit", "debit"]),
-    });
-
     const { title, amount, type } = createTransactionBodySchema.parse(
       request.body
     );
@@ -36,36 +32,50 @@ export async function transactionRoutes(server: FastifyInstance) {
     return reply.status(201).send();
   });
 
-  server.get("/", async () => {
-    const transactions = await setupKnex("transactions").select();
+  server.get("/", { preHandler: [checkSessionIdExists] }, async (request) => {
+    const { sessionId } = request.cookies;
+    const transactions = await setupKnex("transactions")
+      .select()
+      .where("session_id", sessionId);
     return {
       transactions,
     };
   });
 
-  server.get("/:id", async (request) => {
-    const getTransactionsParamsSchema = z.object({
-      id: z.string().uuid(),
-    });
-    const { id } = getTransactionsParamsSchema.parse(request.params);
+  server.get(
+    "/:id",
+    { preHandler: [checkSessionIdExists] },
+    async (request) => {
+      const { id } = getTransactionsParamsSchema.parse(request.params);
 
-    const transaction = await setupKnex("transactions")
-      .select()
-      .where({ id })
-      .first();
-    return {
-      transaction,
-    };
-  });
+      const { sessionId } = request.cookies;
 
-  server.get("/summary", async () => {
-    const balance = await setupKnex("transactions")
-      .sum("amount", {
-        as: "balance",
-      })
-      .first();
-    return {
-      balance,
-    };
-  });
+      const transaction = await setupKnex("transactions")
+        .select()
+        .where({ id })
+        .andWhere("session_id", sessionId)
+        .first();
+      return {
+        transaction,
+      };
+    }
+  );
+
+  server.get(
+    "/summary",
+    { preHandler: [checkSessionIdExists] },
+    async (request) => {
+      const { sessionId } = request.cookies;
+
+      const balance = await setupKnex("transactions")
+        .sum("amount", {
+          as: "balance",
+        })
+        .where("session_id", sessionId)
+        .first();
+      return {
+        balance,
+      };
+    }
+  );
 }
