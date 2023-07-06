@@ -1,1 +1,11 @@
+#dependecies
 node_modules
+
+#local env
+.env
+
+#databse
+db/app.db
+
+#build
+dist

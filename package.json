@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type":"module",
+  "engines": {
+    "node": ">= 18"
+  },
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
     "knex": "node --no-warnings --loader tsx ./node_modules/knex/bin/cli.js",
-    "lint": "eslint src --ext .ts --fix"
+    "lint": "eslint src --ext .ts --fix",
+    "build": "tsup src/server.ts --format cjs --minify --dts-resolve"
   },
   "keywords": [],
   "author": "",
@@ -18,12 +22,17 @@
     "@types/node": "^20.3.3",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
+    "tsup": "^6.5.0",
     "tsx": "^3.12.7",
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@fastify/cookie": "^8.3.0",
+    "dotenv": "^16.3.1",
     "fastify": "^4.19.2",
     "knex": "^2.4.2",
-    "sqlite3": "^5.1.6"
+    "pg": "^8.11.1",
+    "sqlite3": "^5.1.6",
+    "zod": "^3.21.4"
   }
 }
